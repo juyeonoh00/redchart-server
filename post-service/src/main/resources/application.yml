@@ -1,0 +1,51 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: post-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/redchart_posting_service
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+  kafka:
+    bootstrap-servers: localhost:9092  # Kafka 브로커 주소
+    consumer:
+      group-id: posting-service        # B 서비스의 컨슈머 그룹 ID
+      auto-offset-reset: earliest       # 가장 이른 오프셋부터 읽기 시작 (최초 실행 시)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 키 역직렬화 클래스
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer  # 오류 처리용 역직렬화 클래스
+      properties:
+        spring.json.trusted.packages: '*'  # 신뢰할 패키지 설정
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      missing-topics-fatal: false
+  cloud:
+    compatibility-verifier:
+      enabled: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+logging:
+  level:
+    org.apache.kafka: ERROR
+    kafka: ERROR
+springdoc:
+  swagger-ui:
+    path: /api/posts/swagger-ui.html

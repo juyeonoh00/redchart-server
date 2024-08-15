@@ -3,9 +3,81 @@ server:
 spring:
   application:
     name: user-service
-
   datasource:
     url: jdbc:mysql://localhost:3306/redchart_user_service
+  #    url: jdbc:mysql://172.17.0.2:3306/mysql
+  #    url: jdbc:mysql://localhost:3306/mysql?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
     username: root
+  #    username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: localhost    # Redis 서버 호스트 (기본적으로 로컬에서 실행되는 경우 localhost)
+      port: 6379         # Redis 서버 포트
+      password: 1234
+  security:
+    oauth2:
+      kakao:
+        client-id: 51f206f9c28b3b1c066e1c44cfd80268
+        redirect_uri: http://localhost:8082/kakao
+        client-secret: oKHWmkfPWZ2W53VSeRweeaW4E8s4W09g
+        authorization-grant-type: authorization_code
+        token-uri: https://kauth.kakao.com/oauth/token
+        client-name: Kakao
+  jpa:
+    hibernate:
+      ddl-auto: create
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: user-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # 키 직렬화 클래스
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer  # 값 직렬화 클래스
+      acks: all                            # 메시지 전송 보증 수준
+      retries: 3                           # 전송 실패 시 재시도 횟수
+      linger-ms: 1
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ohjuyeon2000@gmail.com
+    password: j l i m a d c h t s w x a m t t
+    properties:
+      mail:
+        smtp:
+          from: ODIRO@gmail.com
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 1800000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+logging:
+  level:
+    org.apache.kafka: ERROR
+    kafka: ERROR
+
+jwt:
+  secret: 7ae96706cd6e6aade43a3b843bb3317f823ab927b64beb8d45558b3ac29f079dd36afe40f1646af31c334ccbb568cfe64b9e4e54a47aa5a5077796eca1e58075
