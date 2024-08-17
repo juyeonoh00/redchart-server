@@ -11,36 +11,67 @@ spring:
   cloud:
     gateway:
       routes:
-
         - id: user-service
-          uri: lb://user-service  # Eureka에서 등록된 a-service로 라우팅
+          uri: lb://user-service
           predicates:
-            - Path=/api/users/**  # 모든 API 요청을 처리합니다.
-#          filters:
-#            - name: SecurityConfig
-        - id: post-service-swagger
-          uri: lb://post-service
-          predicates:
-            - Path=/api/posts/swagger-ui.html, /api/posts/swagger-ui/**, /api/posts/v3/api-docs/**
+            - Path=/api/users/**
 
         - id: post-service
-          uri: lb://post-service  # Eureka에서 등록된 b-service로 라우팅
+          uri: lb://post-service
           predicates:
-            - Path=/api/posts/**  # Fallback 경로를 정의합니다.
-#          filters:
-#            - name: SecurityConfig
+            - Path=/api/posts/**
+
+        - id: newsfeed-service
+          uri: lb://newsfeed-service
+          predicates:
+            - Path=/api/newsfeed/**
+
+
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/v3/api-docs/**, /api/users/swagger-ui/**
+            - Method=GET
+          filters:
+            - RewritePath=/api/users/(?<path>.*), /$\{path}
+
+        - id: post-service
+          uri: lb://post-service
+          predicates:
+            - Path=/api/posts/v3/api-docs/**, /api/posts/swagger-ui/**
+            - Method=GET
+          filters:
+            - RewritePath=/api/posts/(?<path>.*), /$\{path}
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka
     register-with-eureka: true
     fetch-registry: true
   instance:
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
-springdoc:
-  swagger-ui:
-    path: /api/posts/swagger-ui.html
 
 jwt:
   secret: 7ae96706cd6e6aade43a3b843bb3317f823ab927b64beb8d45558b3ac29f079dd36afe40f1646af31c334ccbb568cfe64b9e4e54a47aa5a5077796eca1e58075
+logging:
+  level:
+    org.springframework.security: DEBUG
+springdoc:
+  swagger-ui:
+    urls[0]:
+      name: 유저 서비스
+      url: http://localhost:8082/api/users/v3/api-docs
+    urls[1]:
+      name: 포스팅 서비스
+      url: http://localhost:8083/api/posts/swagger-ui/index.html
+    use-root-path: true
+#    urls[2]:
+#      name: 랭크 서비스
+#      url: http://게이트웨이 주소/api/rank/v3/api-docs
+
+    urls:
+      - name: user-service
+        url: /api/users/v3/api-docs
+      - name: post-service
+        url: /api/posts/v3/api-docs

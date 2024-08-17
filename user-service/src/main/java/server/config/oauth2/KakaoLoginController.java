@@ -16,7 +16,7 @@ import server.service.UserService;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class KakaoLoginController {
 
     private final Oauth2TokenService oauth2TokenService;

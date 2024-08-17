@@ -32,6 +32,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0'
+	// feign client
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
 	// Spring Cloud Gateway
 	implementation 'org.springframework.cloud:spring-cloud-starter-gateway'

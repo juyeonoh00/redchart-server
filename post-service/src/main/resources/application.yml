@@ -14,28 +14,32 @@ spring:
       ddl-auto: create
 
   kafka:
-    bootstrap-servers: localhost:9092  # Kafka 브로커 주소
-    consumer:
-      group-id: posting-service        # B 서비스의 컨슈머 그룹 ID
-      auto-offset-reset: earliest       # 가장 이른 오프셋부터 읽기 시작 (최초 실행 시)
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 키 역직렬화 클래스
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer  # 오류 처리용 역직렬화 클래스
-      properties:
-        spring.json.trusted.packages: '*'  # 신뢰할 패키지 설정
-        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+#    bootstrap-servers: localhost:9092  # Kafka 브로커 주소
+#    consumer:
+#      group-id: post-service        # B 서비스의 컨슈머 그룹 ID
+#      auto-offset-reset: earliest       # 가장 이른 오프셋부터 읽기 시작 (최초 실행 시)
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 키 역직렬화 클래스
+#      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer  # 오류 처리용 역직렬화 클래스
+#      properties:
+#        spring.json.trusted.packages: '*'  # 신뢰할 패키지 설정
+#        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    listener:
-      missing-topics-fatal: false
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            addTypeInfo: true
+    template:
+      default-topic: post-event
   cloud:
     compatibility-verifier:
       enabled: false
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka
     register-with-eureka: true
     fetch-registry: true
   instance:
@@ -45,7 +49,11 @@ eureka:
 logging:
   level:
     org.apache.kafka: ERROR
-    kafka: ERROR
+    org.springframework.kafka: ERROR
+
 springdoc:
+  api-docs:
+    path: /api/posts/v3/api-docs
   swagger-ui:
     path: /api/posts/swagger-ui.html
+

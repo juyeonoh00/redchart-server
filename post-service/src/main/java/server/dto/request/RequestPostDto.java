@@ -13,11 +13,6 @@ import server.domain.Post;
 @NoArgsConstructor
 public class RequestPostDto {
 
-    @NotNull(message = "사용자 정보가 null입니다")
-    private Long userId;
-
-//    @NotBlank(message = "해당 댓글의 유저 정보가 null 입니다.")
-//    private Long writerId;
 
     @Size(max = 30, message = "제목은 최대 30글자 입니다.")
     @NotNull(message = "제목을 입력해주세요.")
@@ -27,14 +22,12 @@ public class RequestPostDto {
     @NotNull(message = "내용을 입력해주세요.")
     private String content;
 
-    public RequestPostDto(String userId, String title, String content) {
-        this.userId = Long.valueOf(userId);
-//        this.writerId = writerId;
+    public RequestPostDto(String title, String content) {
         this.title = title;
         this.content = content;
     }
 
-    public Post toEntity() {
+    public Post toEntity(Long userId) {
         return Post.builder()
                 .title(title)
                 .writerId(userId)

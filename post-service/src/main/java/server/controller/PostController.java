@@ -9,9 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import server.dto.request.RequestDto;
 import server.dto.request.RequestPostDto;
-import server.dto.response.PostResponseDto;
+import server.dto.response.ResponsePostDto;
 import server.service.PostService;
 
 
@@ -29,9 +28,8 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PostMapping("/create")
-    public ResponseEntity<?> creatpost(@Valid @RequestBody RequestPostDto request) {
-
-        postService.createpost(request);
+    public ResponseEntity<?> creatpost(@Valid @RequestBody RequestPostDto request, @RequestHeader("userId") Long userId) {
+        postService.createpost(request, userId);
         return ResponseEntity.status(HttpStatus.OK).body("게시물이 생성되었습니다.");
     }
 
@@ -40,8 +38,8 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PutMapping("/update/{post_id}")
-    public ResponseEntity<?> updatepost(@Valid @RequestBody RequestPostDto request, @PathVariable("post_id") Long postId) {
-        postService.updatepost(request, postId);
+    public ResponseEntity<?> updatepost(@Valid @RequestBody RequestPostDto request, @PathVariable("post_id") Long postId,@RequestHeader("userId") Long userId) {
+        postService.updatepost(request, postId, userId);
         return ResponseEntity.status(HttpStatus.OK).body("게시물이 수정되었습니다.");
     }
     @Operation(summary = "post 조회")
@@ -49,9 +47,9 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @GetMapping("/details/{post_id}")
-    public ResponseEntity<?> detailspost(@Valid @RequestBody RequestDto request, @PathVariable("post_id") Long postId) {
-        PostResponseDto postResponseDto = postService.detailspost(postId, request.getUserId());
-        return ResponseEntity.status(HttpStatus.OK).body(postResponseDto);
+    public ResponseEntity<?> detailspost(@PathVariable("post_id") Long postId,@RequestHeader("userId") Long userId) {
+        ResponsePostDto responsePostDto = postService.detailspost(postId, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(responsePostDto);
     }
 
     @Operation(summary = "post 삭제")
@@ -59,8 +57,8 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @GetMapping("/delete/{post_id}")
-    public ResponseEntity<?> deletepost(@Valid @RequestBody RequestDto request,@PathVariable("post_id") Long postId) {
-        postService.deletepost(postId, request.getUserId());
+    public ResponseEntity<?> deletepost(@PathVariable("post_id") Long postId,@RequestHeader("userId") Long userId) {
+        postService.deletepost(postId, userId);
         return ResponseEntity.status(HttpStatus.OK).body("게시물이 삭제되었습니다.");
     }
 

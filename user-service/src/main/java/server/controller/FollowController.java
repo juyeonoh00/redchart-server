@@ -19,24 +19,11 @@ import server.service.UserService;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
-public class TestController {
+@RequestMapping("/api/users/follow")
+public class FollowController {
 
-    private final UserRepository userRepository;
-    private final UserService userService;
-    private final FollowRepository followRepository;
     private final FollowService followService;
 
-
-    @PostMapping("/signIn")
-    public User signIn(@RequestBody String num) throws JsonProcessingException {
-        User user = new User("email","username");
-        User user2 = new User("email2","username2");
-        userRepository.save(user);
-        userRepository.save(user2);
-        userService.sendDataToKafka(user);
-        return user;
-    }
 
     @PostMapping(value = "/follow")
     public FollowDto follow(@RequestBody FollowDto followDto) {

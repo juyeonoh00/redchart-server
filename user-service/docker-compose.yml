@@ -1,7 +1,7 @@
 services:
   redis:
     image: redis:7.2.5
-    container_name: redis
+    container_name: redis_user_service
     networks:
       - default
     ports:
@@ -18,9 +18,7 @@ services:
     image: mysql:8.0.34
     container_name: mysql_user_service
     ports:
-      - "3307:3306"
-#    env_file:
-#      - .env
+      - "3307:3307"
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: redchart_user_service

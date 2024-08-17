@@ -1,4 +1,4 @@
-package server.dto.member;
+package server.dto.user;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

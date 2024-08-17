@@ -1,0 +1,59 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: newsfeed-server
+  data:
+    redis:
+      host: localhost
+      port: 6380
+      password:
+  kafka:
+    bootstrap-servers: localhost:9092  # Kafka 브로커 주소
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: newsfeed-service-group      # B 서비스의 컨슈머 그룹 ID
+      auto-offset-reset: earliest       # 가장 이른 오프셋부터 읽기 시작 (최초 실행 시)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+            defaultType: server.kafka.PostEventDto
+
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#    listener:
+#      missing-topics-fatal: false
+  cloud:
+    compatibility-verifier:
+      enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+logging:
+  level:
+    org.apache.kafka: ERROR
+    org.springframework.kafka: ERROR
+
+springdoc:
+  api-docs:
+    path: /api/newsfeed/v3/api-docs
+  swagger-ui:
+    path: /api/newsfeed/swagger-ui.html

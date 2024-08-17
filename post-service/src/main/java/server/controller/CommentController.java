@@ -9,14 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import server.dto.request.RequestCommentDto;
-import server.dto.request.RequestDto;
+import server.dto.request.RequestCreateCommentDto;
+import server.dto.request.RequestUpdateCommentDto;
 import server.service.CommentService;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/post/comments")
+@RequestMapping("/api/posts/comments")
 public class CommentController {
 
     private final CommentService commentService;
@@ -25,8 +25,8 @@ public class CommentController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PostMapping("/{post_id}/add")
-    public ResponseEntity<?> addcomment(@Valid @RequestBody RequestCommentDto request, @PathVariable("post_id") Long postId){
-        commentService.addcomment(request);
+    public ResponseEntity<?> addcomment(@Valid @RequestBody RequestCreateCommentDto request, @PathVariable("post_id") Long postId, @RequestHeader("userId") Long userId) {
+        commentService.addcomment(request, postId, userId);
         return ResponseEntity.status(HttpStatus.OK).body("댓글이 생성되었습니다.");
     }
 
@@ -35,8 +35,8 @@ public class CommentController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PutMapping("/{post_id}/{comment_id}/delete")
-    public ResponseEntity<?> updatecomment(@Valid @RequestBody RequestCommentDto request, @PathVariable("post_id") Long postId, @PathVariable("comment_id") Long commentId){
-        commentService.updatecomment(postId, request.getUserId(), commentId, request);
+    public ResponseEntity<?> updatecomment(@Valid @RequestBody RequestUpdateCommentDto request, @PathVariable("post_id") Long postId, @PathVariable("comment_id") Long commentId, @RequestHeader("userId") Long userId) {
+        commentService.updatecomment(postId, userId, commentId, request);
         return ResponseEntity.status(HttpStatus.OK).body("댓글이 수정되었습니다.");
     }
 
@@ -45,8 +45,8 @@ public class CommentController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PutMapping("/{post_id}/{comment_id}/update")
-    public ResponseEntity<?> deletecomment(@Valid @RequestBody RequestDto request, @PathVariable("post_id") Long postId,@PathVariable("comment_id") Long commentId){
-        commentService.deletecomment(postId, request.getUserId(), commentId);
+    public ResponseEntity<?> deletecomment(@PathVariable("post_id") Long postId,@PathVariable("comment_id") Long commentId,@RequestHeader("userId") Long userId) {
+        commentService.deletecomment(postId, userId, commentId);
         return ResponseEntity.status(HttpStatus.OK).body("댓글이 삭제되었습니다.");
     }
 }

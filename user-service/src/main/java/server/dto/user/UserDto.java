@@ -1,7 +1,11 @@
-package server.dto.member;
+package server.dto.user;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import server.domain.User;
 
+@Getter
+@AllArgsConstructor
 public class UserDto {
     private final String email;
 

@@ -9,14 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import server.dto.request.RequestDto;
 import server.service.LikesService;
 
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/post/likes")
+@RequestMapping("/api/posts/likes")
 public class LikesController {
 
     private final LikesService likesService;
@@ -26,8 +25,8 @@ public class LikesController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PostMapping("/{post_id}/{user_id}/add")
-    public ResponseEntity<?> addlike(@Valid @RequestBody RequestDto request, @PathVariable("post_id") Long postId){
-        likesService.addlike(postId, request.getUserId());
+    public ResponseEntity<?> addlike(@PathVariable("post_id") Long postId,@RequestHeader("userId") Long userId) {
+        likesService.addlike(postId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(postId+"에 좋아요를 눌렀습니다");
     }
 
@@ -36,8 +35,8 @@ public class LikesController {
             @ApiResponse(responseCode = "200", description = "OK")
     })
     @PutMapping("/{post_id}/{user_id}/delete")
-    public ResponseEntity<?> deletelike(@Valid @RequestBody RequestDto request,@PathVariable("post_id") Long postId){
-        likesService.deletelike(postId, request.getUserId());
+    public ResponseEntity<?> deletelike(@PathVariable("post_id") Long postId,@RequestHeader("userId") Long userId) {
+        likesService.deletelike(postId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(postId+"에 좋아요를 삭제했습니다");
     }
 }

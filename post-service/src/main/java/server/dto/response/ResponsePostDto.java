@@ -3,7 +3,7 @@ package server.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import server.domain.Comment;
+import server.feignserver.ServerUsertDto;
 import server.domain.Post;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class PostResponseDto {
+public class ResponsePostDto {
 
     private Long writerId;
     private boolean isWriter;
@@ -21,10 +21,12 @@ public class PostResponseDto {
     private LocalDateTime updateDate;
     private Long likeCnt;
     // comment dto로 변경
-    private List<Comment> commentList;
+    private List<ResponseCommentDetailDto> commentList;
     private boolean checkLike;
+    private ServerUsertDto user;// post 유저 이름 및 유저 사진
+
     // writer의 정보를 가져와야함
-    public PostResponseDto(Post post, Long userId, Long likeCnt, List<Comment> commentList, Boolean checkLike) {
+    public ResponsePostDto(Post post, Long userId, Long likeCnt, List<ResponseCommentDetailDto> commentList, Boolean checkLike) {
         this.title = post.getTitle();
         this.content = post.getContent();
         this.writerId = post.getWriterId();

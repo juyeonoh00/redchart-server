@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import server.config.jwt.exception.ErrorCode;
 import server.config.jwt.exception.TokenExcption;
 import server.domain.User;
@@ -26,8 +28,29 @@ public class JwtUtil {
     private String secretKey;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    public String validateRefreshToken(String token, HttpServletResponse response) {
+        log.error("💡 Access Token 이 만료되었습니다.");
+        token = token.substring(7).trim();
+        try
+        {
+            RefreshToken refreshTokenInfo = refreshTokenRepository.findByAccessToken(token).orElseThrow(()->new TokenExcption(ErrorCode.TOKEN_NOT_FOUND));
+            String refreshToken = refreshTokenInfo.getRefreshToken();
+            validateToken(refreshToken);
+            Long userId = refreshTokenInfo.getMemberId();
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new TokenExcption(ErrorCode.USER_NOT_FOUNDED));
+            String accessToken = createAccessToken(user, response);
+            refreshTokenRepository.save(new RefreshToken(userId, refreshToken, accessToken));
+            log.info("토큰 재생성");
+            return accessToken;
+        }catch (TokenExcption e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다");
+
+        }
+    }
     public String createAccessToken(User user, HttpServletResponse response){
-        Claims claims = Jwts.claims().setSubject(user.getUsername());
+        Claims claims = Jwts.claims().setSubject(String.valueOf(user.getId()));
 //        String authorities = authentication.getAuthorities().stream()
 //                .map(GrantedAuthority::getAuthority)
 //                .collect(Collectors.joining(","));
@@ -87,31 +110,5 @@ public class JwtUtil {
         }
         return false;
     }
-    public Claims parseClaims(String token) {
-        try {
-            return Jwts.parserBuilder().setSigningKey(secretKey.getBytes()).build().parseClaimsJws(token).getBody();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
-    }
 
-    public void validateRefreshToken(String token, HttpServletResponse response) throws IOException {
-        log.error("💡 Access Token 이 만료되었습니다.");
-        try
-        {
-            RefreshToken refreshTokenInfo = refreshTokenRepository.findByAccessToken(token).orElseThrow(()->new TokenExcption(ErrorCode.TOKEN_NOT_FOUND));
-            String refreshToken = refreshTokenInfo.getRefreshToken();
-            validateToken(refreshToken);
-            Long memberId = refreshTokenInfo.getMemberId();
-            User user = userRepository.findById(memberId)
-                    .orElseThrow(() -> new TokenExcption(ErrorCode.USER_NOT_FOUNDED));
-            // 리프레시 토큰 정보 기반 에세스 토큰 재발급
-            String accessToken = createAccessToken(user, response);
-            // 레디스에 저장
-            refreshTokenRepository.save(new RefreshToken(memberId, refreshToken, accessToken));
-        }catch (TokenExcption e) {
-            // 리프레시 토큰 없으면
-            throw e;
-        }
-    }
 }

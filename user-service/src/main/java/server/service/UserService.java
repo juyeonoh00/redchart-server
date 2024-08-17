@@ -16,15 +16,13 @@ import server.config.jwt.JwtUtil;
 import server.config.oauth2.OAuthAttributes;
 import server.config.redis.RedisService;
 import server.domain.Authority;
-import server.domain.Follow;
 import server.domain.User;
 
-import server.dto.member.SignInRequestDto;
-import server.dto.member.SignUpDto;
-import server.dto.member.UpdateUserRequest;
-import server.dto.member.UserDto;
+import server.dto.user.*;
 import server.exception.EmailAlreadyExistsException;
 import server.exception.UsernameAlreadyExistsException;
+import server.feignclient.ClientFollowersDto;
+import server.feignclient.ClientUserDto;
 import server.repository.UserRepository;
 
 import java.io.UnsupportedEncodingException;
@@ -140,6 +138,12 @@ public class UserService {
         // 비밀번호 암호화해야함
         return new UserDto(user);
     }
+
+    public ClientUserDto getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new ClientUserDto(user);
+    }
     public User signIn(SignInRequestDto signInRequestDto) throws Exception {
         User user = userRepository.findByusername(signInRequestDto.getUsername()).orElseThrow(()-> new
                 RuntimeException("user가 존재하지 않습니다."));
@@ -150,10 +154,4 @@ public class UserService {
         return user;
     }
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-    public void sendDataToKafka(User user) throws JsonProcessingException {
-        String dataJson = new ObjectMapper().writeValueAsString("juyeonoh00");
-        kafkaTemplate.send("user-service-to-post-service-data-topic", dataJson);
-    }
 }

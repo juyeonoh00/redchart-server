@@ -10,15 +10,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import server.config.jwt.JwtUtil;
 import server.config.jwt.TokenDto;
 import server.domain.User;
-import server.dto.member.*;
-import server.repository.UserRepository;
+import server.dto.user.*;
 import server.service.UserService;
 
 import java.io.UnsupportedEncodingException;
@@ -26,7 +24,7 @@ import java.security.NoSuchAlgorithmException;
 
 @Slf4j
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -88,7 +86,12 @@ public class UserController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    @GetMapping("/refresh-token")
+    public String refresh(@RequestHeader("Authorization")String token, HttpServletResponse response) {
+        String accessToken = jwtUtil.validateRefreshToken(token, response);
 
+        return accessToken;
+    }
 
 //    @Operation(summary = "회원 정보 수정", description = "회원 정보 수정")
 //    @ApiResponses(value = {
@@ -99,14 +102,6 @@ public class UserController {
 //        UserDto updatedMember = userService.updateUser(principalDetails().getId(), request);
 //        return ResponseEntity.ok(updatedMember);
 //    }
-
-
-
-
-
-
-
-
 
 
 }

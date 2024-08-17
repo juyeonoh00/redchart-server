@@ -38,7 +38,9 @@ dependencies {
 
 	//kafka
 	implementation 'org.springframework.kafka:spring-kafka'
-
+	// feign client
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 	// mysql
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation group: 'com.mysql', name: 'mysql-connector-j', version: '8.3.0'
