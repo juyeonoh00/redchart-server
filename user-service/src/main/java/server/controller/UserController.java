@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +62,6 @@ public class UserController {
     @PostMapping("/emails/verification-requests")
     public ResponseEntity sendMessage(@RequestParam("email") @Valid String email) throws NoSuchAlgorithmException, MessagingException, UnsupportedEncodingException {
         userService.sendCodeToEmail(email);
-
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -69,7 +69,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK")
     })
-    @GetMapping("/user/check-username")
+    @GetMapping("/check-username")
     public ResponseEntity checkUsername(@RequestParam("username") @Valid String username) {
         userService.checkDuplicatedUsername(username);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -83,7 +83,6 @@ public class UserController {
     public ResponseEntity verificationEmail(@RequestParam("email") @Valid String email,
                                             @RequestParam("code") String authCode) {
         userService.verifiedCode(email, authCode);
-
         return new ResponseEntity<>(HttpStatus.OK);
     }
     @GetMapping("/refresh-token")
@@ -93,15 +92,34 @@ public class UserController {
         return accessToken;
     }
 
-//    @Operation(summary = "회원 정보 수정", description = "회원 정보 수정")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "202", description = "Accepted")
-//    })
-//    @PatchMapping("/user/update")
-//    public ResponseEntity<UserDto> updateUser(@RequestBody UpdateUserRequest request) {
-//        UserDto updatedMember = userService.updateUser(principalDetails().getId(), request);
-//        return ResponseEntity.ok(updatedMember);
-//    }
+    @Operation(summary = "회원 정보 수정", description = "회원 정보 수정")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Accepted")
+    })
+    @PatchMapping("/update")
+    public ResponseEntity<UserDto> updateUser(@RequestHeader("userId") Long userId, @RequestBody UpdateUserRequest request) {
+        UserDto user = userService.updateUser(userId, request);
+        // dto 만들어서 조건 추가하기
+        return ResponseEntity.ok(user);
+    }
+    @Operation(summary = "프로필 이미지 업로드", description = "프로필 이미지 업로드")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Accepted")
+    })
+    @PutMapping("/update/profileImage")
+    public ResponseEntity<UserDto> updateProfileImage(@RequestHeader("userId") Long userId, @RequestBody UpdateUserRequest request) {
+        UserDto user = userService.updateUser(userId, request);
+        return ResponseEntity.ok(user);
+    }
 
+    @Operation(summary = "로그아웃", description = "Acceess Token 인증 후, 현재 로그인중인 사용자 로그아웃")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Accepted")
+    })
+    @PatchMapping("/logout")
+    public void logout(HttpServletResponse response, HttpServletRequest request) {
+        userService.logout(request);
+        response.setHeader("Authorization", "");
+    }
 
 }

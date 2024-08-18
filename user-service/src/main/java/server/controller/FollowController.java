@@ -1,19 +1,16 @@
 package server.controller;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import server.domain.User;
+import server.dto.follow.CountFollowDto;
 import server.dto.follow.FollowDto;
-import server.dto.follow.FollowerDto;
-import server.dto.follow.FollowingDto;
-import server.repository.FollowRepository;
-import server.repository.UserRepository;
+import server.dto.follow.FollowUserListDto;
 import server.service.FollowService;
-import server.service.UserService;
+
+import java.util.List;
 
 
 @Slf4j
@@ -25,19 +22,29 @@ public class FollowController {
     private final FollowService followService;
 
 
-    @PostMapping(value = "/follow")
-    public FollowDto follow(@RequestBody FollowDto followDto) {
-        return followService.follow(followDto);
+    @PostMapping(value = "/add/{followeeId}")
+    public ResponseEntity<?> addfollow(@RequestHeader("userId") Long userId, @PathVariable("followeeId") Long followeeId) {
+        followService.addfollow(userId, followeeId);
+        return ResponseEntity.status(HttpStatus.OK).body("팔로우가 추가 되었습니다");
+    }
+    @PostMapping(value = "/delete/{followeeId}")
+    public ResponseEntity<?> deletefollow(@RequestHeader("userId") Long userId, @PathVariable("followeeId") Long followeeId) {
+        followService.deletefollow(userId, followeeId);
+        return ResponseEntity.status(HttpStatus.OK).body("팔로우가 취소 되었습니다");
     }
 
-    @PostMapping(value = "/follower")
-    public FollowerDto follower(@RequestBody Long user_id) {
-        return followService.followers(user_id);
+    @PostMapping(value = "/following/{userId}")
+    public List<FollowUserListDto> getfollowings(@PathVariable Long userId) {
+        return followService.getfollowers(userId);
     }
-    @PostMapping(value = "/following")
-    public FollowingDto following(@RequestBody Long user_id) {
-        return followService.following(user_id);
+    @PostMapping(value = "/follower/{userId}")
+    public List<FollowUserListDto> getfollowers(@PathVariable Long userId) {
+        return followService.getfollowings(userId);
     }
 
-
+    @PostMapping(value = "/num/{userId}")
+    public CountFollowDto countFollow(@PathVariable Long userId) {
+        return followService.countFollow(userId);
+    }
+// 중복 추가 안되게 수정
 }

@@ -2,6 +2,7 @@ package server.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.config.email.EmailService;
 import server.config.jwt.JwtUtil;
+import server.config.jwt.RefreshTokenService;
 import server.config.oauth2.OAuthAttributes;
 import server.config.redis.RedisService;
 import server.domain.Authority;
@@ -43,7 +45,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final RedisService redisService;
-    private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
     @Value("${spring.mail.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
     public Long join(User user) {
@@ -72,7 +74,7 @@ public class UserService {
 
     public void sendCodeToEmail(String toEmail) throws NoSuchAlgorithmException, MessagingException, UnsupportedEncodingException, jakarta.mail.MessagingException {
         this.checkDuplicatedEmail(toEmail);
-        String title = "[ODIRO] 이메일 인증 번호";
+        String title = "[RedChart] 이메일 인증 번호";
         String authCode = this.createCode();
         emailService.sendEmail(toEmail, title, authCode);
         // 이메일 인증 요청 시 인증 번호 Redis에 저장 ( key = "AuthCode " + Email / value = AuthCode )
@@ -92,7 +94,6 @@ public class UserService {
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
             throw new EmailAlreadyExistsException(email);
-
         }
     }
     public void checkDuplicatedUsername(String username) {
@@ -120,22 +121,24 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (request.getUsername() != null) {
+            Optional<User> checkUser = userRepository.findByusername(request.getUsername());
+            if (checkUser.isPresent()) {
+                throw new UsernameAlreadyExistsException(user.getUsername());
+            }
             user.setUsername(request.getUsername());
-            // 중복 확인
         }
         if (request.getEmail() != null) {
+            Optional<User> checkUser = userRepository.findByEmail(request.getEmail());
+            if (checkUser.isPresent()) {
+                throw new EmailAlreadyExistsException(user.getEmail());
+            }
             user.setEmail(request.getEmail());
-            // 이메일 검증
         }
         if (request.getPassword() != null) {
             user.setPassword(request.getPassword());
-            // 비밀번호
+            user.passwordEncoding(passwordEncoder);
         }
         userRepository.save(user);
-
-        // 이메일 변경 시 이메일 인증이 필요함
-        // 이메일 중복도 확인해야함
-        // 비밀번호 암호화해야함
         return new UserDto(user);
     }
 
@@ -154,4 +157,8 @@ public class UserService {
         return user;
     }
 
+    public void logout(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        refreshTokenService.removeRefreshToken(authorizationHeader.substring(7));
+    }
 }
