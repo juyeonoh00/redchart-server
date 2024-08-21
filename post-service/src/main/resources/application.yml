@@ -5,25 +5,17 @@ spring:
     name: post-service
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/redchart_posting_service
-    username: root
-    password: 1234
+    url: jdbc:mysql://post-service-mysql:3306/post-service-mysql
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${DB_PASSWORD:1234}
   jpa:
     hibernate:
       ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
 
   kafka:
-#    bootstrap-servers: localhost:9092  # Kafka 브로커 주소
-#    consumer:
-#      group-id: post-service        # B 서비스의 컨슈머 그룹 ID
-#      auto-offset-reset: earliest       # 가장 이른 오프셋부터 읽기 시작 (최초 실행 시)
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 키 역직렬화 클래스
-#      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer  # 오류 처리용 역직렬화 클래스
-#      properties:
-#        spring.json.trusted.packages: '*'  # 신뢰할 패키지 설정
-#        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
-
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
