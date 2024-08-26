@@ -8,4 +8,5 @@ import lombok.NoArgsConstructor;
 public class PostEventDto {
     private String type;
     private Long postId;
+    private Long postWriterId;
 }

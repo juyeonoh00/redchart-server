@@ -1,7 +1,7 @@
 package server.dto.response;
 
 import lombok.Getter;
-import server.feignserver.ServerUsertDto;
+import server.feign.server.ServerUsertDto;
 import server.domain.Comment;
 
 import java.time.LocalDateTime;

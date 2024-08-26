@@ -1,11 +1,11 @@
-package server.feignserver;
+package server.feign.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class ServerFollowersDto {
+public class ServerUsertDto {
     private String username;
     private String profileImage;
 }

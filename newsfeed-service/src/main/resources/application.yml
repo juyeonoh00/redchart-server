@@ -2,12 +2,12 @@ server:
   port: 8084
 spring:
   application:
-    name: newsfeed-server
+    name: newsfeed-service
   data:
     redis:
+#      host: redis_newsfeed_service
       host: localhost
-      port: 6380
-      password:
+      port: 6379
   kafka:
     bootstrap-servers: localhost:9092  # Kafka 브로커 주소
 #    producer:
@@ -24,13 +24,8 @@ spring:
           json:
             trusted:
               packages: "*"
-            defaultType: server.kafka.PostEventDto
+#            defaultType: server.kafka.PostEventDto
 
-#    producer:
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-#    listener:
-#      missing-topics-fatal: false
   cloud:
     compatibility-verifier:
       enabled: false

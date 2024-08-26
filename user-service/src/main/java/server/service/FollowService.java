@@ -10,6 +10,7 @@ import server.domain.Follow;
 import server.domain.User;
 import server.dto.follow.CountFollowDto;
 import server.dto.follow.FollowUserListDto;
+import server.feign.client.FollowersListDto;
 import server.repository.FollowRepository;
 import server.repository.UserRepository;
 
@@ -65,6 +66,13 @@ public class FollowService {
         return follows.stream()
                 .map(follow -> new FollowUserListDto(follow.getFollower().getId(), follow.getFollower().getUsername(),follow.getFollower().getProfileImage()))
                 .collect(Collectors.toList());
+    }
+    public FollowersListDto getfollowersId(Long userId) {
+        List<Follow> follows = followRepository.findByFollowingId(userId);
+        List<Long> followersList= follows.stream()
+                .map(follow ->  follow.getFollower().getId())
+                .collect(Collectors.toList());
+        return new FollowersListDto(followersList);
     }
 
     public CountFollowDto countFollow(Long userId) {

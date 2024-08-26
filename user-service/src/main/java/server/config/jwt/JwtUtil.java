@@ -1,6 +1,9 @@
 package server.config.jwt;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +18,7 @@ import server.domain.User;
 import server.repository.UserRepository;
 
 import java.io.IOException;
+import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -28,7 +32,12 @@ public class JwtUtil {
     private String secretKey;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private Key key;
 
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+    }
     public String validateRefreshToken(String token, HttpServletResponse response) {
         log.error("💡 Access Token 이 만료되었습니다.");
         token = token.substring(7).trim();
@@ -59,7 +68,7 @@ public class JwtUtil {
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+ JwtProperties.ACCESS_TOKEN_EXPIRATION_TIME))
                 .claim(JwtProperties.AUTHORITIES_KEY, user.getAuthority())
-                .signWith(SignatureAlgorithm.HS256,secretKey.getBytes())
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
         response.addHeader(JwtProperties.ACCESS_HEADER, JwtProperties.TOKEN_PREFIX + accessToken);
         return accessToken;
@@ -76,14 +85,14 @@ public class JwtUtil {
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+ JwtProperties.ACCESS_TOKEN_EXPIRATION_TIME))
                 .claim(JwtProperties.AUTHORITIES_KEY, user.getAuthority())
-                .signWith(SignatureAlgorithm.HS256,secretKey.getBytes())
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+ JwtProperties.REFRESH_TOKEN_EXPIRATION_TIME))
                 .claim(JwtProperties.AUTHORITIES_KEY, user.getAuthority())
-                .signWith(SignatureAlgorithm.HS256,secretKey.getBytes())
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
         response.addHeader(JwtProperties.ACCESS_HEADER, JwtProperties.TOKEN_PREFIX + accessToken);
         refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken, accessToken));

@@ -1,0 +1,44 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: stock-service
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  kafka:
+    consumer:
+      group-id: stock-service-group      # B 서비스의 컨슈머 그룹 ID
+      auto-offset-reset: earliest       # 가장 이른 오프셋부터 읽기 시작 (최초 실행 시)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    template:
+      default-topic: stock-event
+  cloud:
+    compatibility-verifier:
+      enabled: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+logging:
+  level:
+    org.apache.kafka: ERROR
+    org.springframework.kafka: ERROR
+
+springdoc:
+  api-docs:
+    path: /api/stocks/v3/api-docs
+  swagger-ui:
+    path: /api/stockS/swagger-ui.html
+

@@ -3,7 +3,7 @@ package server.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import server.feignserver.ServerUsertDto;
+import server.feign.server.ServerUsertDto;
 import server.domain.Post;
 
 import java.time.LocalDateTime;

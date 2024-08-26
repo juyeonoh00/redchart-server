@@ -1,4 +1,4 @@
-package server.feignclient;
+package server.feign.client;
 
 
 import lombok.RequiredArgsConstructor;
@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import server.service.FollowService;
 import server.service.UserService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -21,9 +23,9 @@ public class ClientController {
         return user;
     }
 
-//    @GetMapping("/followers/{userId}")
-//    public FollowerDto getFollowersById(@PathVariable Long userId){
-//        FollowerDto user = followService.followers(userId);
-//        return user;
-//    }
+    @GetMapping("/followers/{userId}")
+    public FollowersListDto getFollowersById(@PathVariable Long userId){
+        FollowersListDto followersId = followService.getfollowersId(userId);
+        return followersId;
+    }
 }

@@ -1,4 +1,4 @@
-package server.feignclient;
+package server.feign.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

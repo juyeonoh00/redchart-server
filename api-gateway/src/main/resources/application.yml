@@ -26,6 +26,16 @@ spring:
           predicates:
             - Path=/api/newsfeed/**
 
+        - id: stock-service
+          uri: lb://stock-service
+          predicates:
+            - Path=/api/stocks/**
+
+        - id: stock-api-service
+          uri: lb://stock-api-service
+          predicates:
+            - Path=/api/stocks-api/**
+
 
         - id: user-service
           uri: lb://user-service
@@ -42,6 +52,15 @@ spring:
             - Method=GET
           filters:
             - RewritePath=/api/posts/(?<path>.*), /$\{path}
+
+        - id: stock-service
+          uri: lb://stock-service
+          predicates:
+            - Path=/api/stocks/v3/api-docs/**, /api/stocks/swagger-ui/**
+            - Method=GET
+          filters:
+            - RewritePath=/api/stocks/(?<path>.*), /$\{path}
+
 eureka:
   client:
     service-url:

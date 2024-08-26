@@ -1,11 +1,8 @@
 package server.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.MessagingException;
@@ -13,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.config.email.EmailService;
-import server.config.jwt.JwtUtil;
 import server.config.jwt.RefreshTokenService;
 import server.config.oauth2.OAuthAttributes;
 import server.config.redis.RedisService;
@@ -23,8 +19,7 @@ import server.domain.User;
 import server.dto.user.*;
 import server.exception.EmailAlreadyExistsException;
 import server.exception.UsernameAlreadyExistsException;
-import server.feignclient.ClientFollowersDto;
-import server.feignclient.ClientUserDto;
+import server.feign.client.ClientUserDto;
 import server.repository.UserRepository;
 
 import java.io.UnsupportedEncodingException;
@@ -46,6 +41,7 @@ public class UserService {
     private final EmailService emailService;
     private final RedisService redisService;
     private final RefreshTokenService refreshTokenService;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     @Value("${spring.mail.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
     public Long join(User user) {
@@ -59,6 +55,10 @@ public class UserService {
         User user = signUpDto.toEntity();
         user.passwordEncoding(passwordEncoder);
         userRepository.save(user);
+
+        // 뉴스피드 db 생성
+        kafkaTemplate.send("user-event",user.getId().toString());
+
         return user;
     }
 

@@ -2,5 +2,12 @@ rootProject.name = 'demo'
 include 'api-gateway'
 include 'post-service'
 include 'user-service'
+<<<<<<< Updated upstream
 include 'eureka-service'
 include 'newsfeed-service'
+=======
+include 'eureka-server'
+include 'newsfeed-service'
+include 'stock-api-service'
+include 'stock-service'
+>>>>>>> Stashed changes

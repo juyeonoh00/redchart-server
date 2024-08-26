@@ -4,14 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import server.feignserver.ServerUser;
+import server.feign.server.ServerUser;
 import server.domain.Comment;
 import server.domain.Post;
 import server.kafka.PostEventDto;
 import server.dto.response.ResponseCommentDetailDto;
 import server.dto.response.ResponsePostDto;
 import server.dto.request.RequestPostDto;
-import server.feignserver.ServerUsertDto;
+import server.feign.server.ServerUsertDto;
 import server.exception.NotMatchWriterException;
 import server.repository.CommentRepository;
 import server.repository.LikesRepository;
@@ -41,7 +41,7 @@ public class PostService {
     public void createpost(RequestPostDto request, Long userId) {
         Post post = request.toEntity(userId);
         postRepository.save(post);
-        kafkaTemplate.send("post-event", new PostEventDto("CREATED", post.getId().toString()));
+        kafkaTemplate.send("post-event", new PostEventDto("CREATED", post.getId().toString(), post.getWriterId()));
     }
     public void updatepost(RequestPostDto request, Long postId,Long userId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
@@ -79,10 +79,11 @@ public class PostService {
         // 내가 좋아요를 눌렀는지
         return new ResponsePostDto(post, userId, likeCnt, commentList, checkLike);
     }
+
     public void deletepost(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
         if (post.getId() != null && post.getWriterId().equals(userId)){
-            kafkaTemplate.send("post-event", new PostEventDto("DELETED",postId.toString()));
+            kafkaTemplate.send("post-event", new PostEventDto("DELETED",postId.toString(), post.getWriterId()));
             postRepository.deleteById(postId);
         }
         else {
