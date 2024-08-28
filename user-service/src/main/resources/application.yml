@@ -1,33 +1,24 @@
 server:
   port: 8082
 spring:
+  config:
+    import: classpath:application-key.yml
   application:
     name: user-service
   datasource:
-<<<<<<< Updated upstream
-    url: jdbc:mysql://localhost:3306/redchart_user_service
-    username: root
-    password: 1234
+    url: jdbc:mysql://localhost:3307/redchart_user_service
+    #    url: jdbc:mysql://localhost:33076/redchart_user_serviceser_service
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: 1234
-=======
-#    url: jdbc:mysql://user-service-mysql:3306/user-service-mysql
-    url: jdbc:mysql://localhost:3306/redchart_user_service
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${DB_PASSWORD:1234}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  data:
-    redis:
-#      host: user-service-redis
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST}
+      #      host: localhost
+      port: ${REDIS_PORT}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -35,30 +26,27 @@ spring:
       compatibility-verifier:
         enabled: false
 
->>>>>>> Stashed changes
   security:
     oauth2:
       kakao:
-        client-id: 51f206f9c28b3b1c066e1c44cfd80268
-        redirect_uri: http://localhost:8082/kakao
-        client-secret: oKHWmkfPWZ2W53VSeRweeaW4E8s4W09g
-        authorization-grant-type: authorization_code
-        token-uri: https://kauth.kakao.com/oauth/token
+        client-id: ${KAKAO_CLIENT_ID}
+        redirect_uri: ${KAKAO_REDIRECT_URL}
+        client-secret: ${KAKAO_CLIENT_SECRET}
+        authorization-grant-type: ${KAKAO_GRANT_TYPE}
+        token-uri: ${KAKAO_TOKEN_URI}
         client-name: Kakao
-  jpa:
-    hibernate:
-      ddl-auto: create
+
   cloud:
     compatibility-verifier:
       enabled: false
 
   kafka:
     bootstrap-servers: localhost:9092
-#    consumer:
-#      group-id: user-service
-#      auto-offset-reset: earliest
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    #    consumer:
+    #      group-id: user-service
+    #      auto-offset-reset: earliest
+    #      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    #      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer  # 키 직렬화 클래스
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer  # 값 직렬화 클래스
@@ -69,12 +57,12 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ohjuyeon2000@gmail.com
-    password: j l i m a d c h t s w x a m t t
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
-          from: ODIRO@gmail.com
+          from: ${MAIL_FROM}
           auth: true
           starttls:
             enable: true
@@ -99,7 +87,7 @@ logging:
     kafka: ERROR
 
 jwt:
-  secret: 7ae96706cd6e6aade43a3b843bb3317f823ab927b64beb8d45558b3ac29f079dd36afe40f1646af31c334ccbb568cfe64b9e4e54a47aa5a5077796eca1e58075
+  secret: ${JWT_SECRET}
 
 springdoc:
   api-docs:

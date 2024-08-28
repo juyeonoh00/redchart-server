@@ -8,7 +8,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
@@ -19,7 +18,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
     @Bean
     public OpenAPI openAPI() {
         Info info = new Info()
-                .title("Stock-Api Module")
+                .title("Stock-Service Module")
                 .version("V.1.0")
                 .description("API 문서");
 

@@ -3,8 +3,15 @@ server:
 spring:
   application:
     name: stock-service
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  datasource:
+    #    url: jdbc:mysql://localhost:3306/redchart_post_service
+    url: jdbc:mysql://localhost:3306/redchart_stock_service
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${DB_PASSWORD:1234}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
   kafka:
     consumer:
       group-id: stock-service-group      # B 서비스의 컨슈머 그룹 ID
@@ -21,6 +28,7 @@ spring:
   cloud:
     compatibility-verifier:
       enabled: false
+
 eureka:
   client:
     service-url:
@@ -40,5 +48,5 @@ springdoc:
   api-docs:
     path: /api/stocks/v3/api-docs
   swagger-ui:
-    path: /api/stockS/swagger-ui.html
+    path: /api/stocks/swagger-ui.html
 
