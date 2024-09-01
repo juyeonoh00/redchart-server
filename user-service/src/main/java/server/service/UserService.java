@@ -1,11 +1,10 @@
 package server.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.MessagingException;
@@ -14,17 +13,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.config.email.EmailService;
 import server.config.jwt.JwtUtil;
-import server.config.jwt.RefreshTokenService;
+import server.config.jwt.TokenDto;
 import server.config.oauth2.OAuthAttributes;
 import server.config.redis.RedisService;
 import server.domain.Authority;
 import server.domain.User;
-
 import server.dto.user.*;
-import server.exception.EmailAlreadyExistsException;
-import server.exception.UsernameAlreadyExistsException;
-import server.feignclient.ClientFollowersDto;
-import server.feignclient.ClientUserDto;
+import server.exception.CustomException;
+import server.exception.ErrorCode;
+import server.feign.client.ClientUserDto;
 import server.repository.UserRepository;
 
 import java.io.UnsupportedEncodingException;
@@ -33,6 +30,8 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Random;
+
+import static server.config.jwt.JwtProperties.REFRESH_TOKEN_EXPIRATION_TIME;
 
 
 @Slf4j
@@ -45,21 +44,27 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final RedisService redisService;
-    private final RefreshTokenService refreshTokenService;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final JwtUtil jwtUtil;
     @Value("${spring.mail.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
+
     public Long join(User user) {
         userRepository.save(user);
         return user.getId();
     }
 
     @Transactional
-    public User signUp(SignUpDto signUpDto) {
+    public SignUpResponseDto signUp(SignUpDto signUpDto) {
         signUpDto.setAuthority(Authority.valueOf("ROLE_USER"));
         User user = signUpDto.toEntity();
         user.passwordEncoding(passwordEncoder);
         userRepository.save(user);
-        return user;
+
+        // 뉴스피드 db 생성
+//        kafkaTemplate.send("user-event",user.getId().toString());
+
+        return SignUpResponseDto.toDto(user);
     }
 
     // 소셜 로그인
@@ -93,16 +98,18 @@ public class UserService {
     private void checkDuplicatedEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
-            throw new EmailAlreadyExistsException(email);
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL, email);
         }
     }
+
     public void checkDuplicatedUsername(String username) {
         Optional<User> user = userRepository.findByusername(username);
         if (user.isPresent()) {
-            throw new UsernameAlreadyExistsException(username);
+            throw new CustomException(ErrorCode.DUPLICATED_USER_NAME, username);
         }
     }
-    private String createCode() throws NoSuchAlgorithmException {
+
+    private String createCode() {
         int lenth = 6;
         try {
             Random random = SecureRandom.getInstanceStrong();
@@ -111,9 +118,8 @@ public class UserService {
                 builder.append(random.nextInt(10));
             }
             return builder.toString();
-        } catch (NoSuchAlgorithmException e) {
-            log.debug("userService.createCode() exception occur");
-            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.CANNOT_CREATE_CODE, e);
         }
     }
 
@@ -123,14 +129,14 @@ public class UserService {
         if (request.getUsername() != null) {
             Optional<User> checkUser = userRepository.findByusername(request.getUsername());
             if (checkUser.isPresent()) {
-                throw new UsernameAlreadyExistsException(user.getUsername());
+                throw new CustomException(ErrorCode.DUPLICATED_USER_NAME, request.getUsername());
             }
             user.setUsername(request.getUsername());
         }
         if (request.getEmail() != null) {
             Optional<User> checkUser = userRepository.findByEmail(request.getEmail());
             if (checkUser.isPresent()) {
-                throw new EmailAlreadyExistsException(user.getEmail());
+                throw new CustomException(ErrorCode.DUPLICATED_EMAIL, request.getUsername());
             }
             user.setEmail(request.getEmail());
         }
@@ -144,21 +150,44 @@ public class UserService {
 
     public ClientUserDto getUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUNDED, userId));
         return new ClientUserDto(user);
     }
-    public User signIn(SignInRequestDto signInRequestDto) throws Exception {
-        User user = userRepository.findByusername(signInRequestDto.getUsername()).orElseThrow(()-> new
-                RuntimeException("user가 존재하지 않습니다."));
+
+    public TokenDto signIn(SignInRequestDto signInRequestDto, HttpServletResponse response) throws Exception {
+        User user = userRepository.findByusername(signInRequestDto.getUsername()).orElseThrow(() -> new
+                CustomException(ErrorCode.USER_NOT_FOUNDED, signInRequestDto.getUsername()));
         if (user == null || !passwordEncoder.matches(signInRequestDto.getPassword(), user.getPassword())) {
-            // 비밀번호가 일치하지 않거나 사용자가 존재하지 않으면 예외 발생
-            throw new Exception("Invalid username or password.");
+            throw new CustomException(ErrorCode.USER_NOT_FOUNDED, user);
         }
-        return user;
+        TokenDto tokenDto = jwtUtil.generateToken(user, response);
+        redisService.setValues(user.getId().toString(), tokenDto.getRefreshToken(), Duration.ofDays(REFRESH_TOKEN_EXPIRATION_TIME));
+        return tokenDto;
     }
 
     public void logout(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        refreshTokenService.removeRefreshToken(authorizationHeader.substring(7));
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String accessToken = jwtUtil.getJwtToken(authorizationHeader);
+        String id = jwtUtil.getIdByAccessToken(accessToken);
+        redisService.deleteValues(id);
+    }
+
+    @Transactional
+    public TokenDto reissueAccessToken(HttpServletRequest request, HttpServletResponse response) {
+
+        String accessToken = jwtUtil.getJwtToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+
+        String userId = jwtUtil.getIdByAccessToken(accessToken);
+
+        User user = userRepository.findById(Long.valueOf(userId))
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUNDED));
+
+        String refreshToken = redisService.getValues(userId);
+
+        jwtUtil.validateRefreshToken(refreshToken);
+
+        String newToken = jwtUtil.createAccessToken(user, response);
+
+        return new TokenDto(newToken, refreshToken);
     }
 }

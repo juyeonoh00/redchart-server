@@ -22,8 +22,9 @@ public class KakaoLoginController {
     private final Oauth2TokenService oauth2TokenService;
     private final UserService memberService;
     private final JwtUtil jwtUtil;
+
     @GetMapping("/kakao")
-    public ResponseEntity<TokenDto> callback(@RequestParam("code") String code, HttpServletResponse response) {
+    public ResponseEntity<String> callback(@RequestParam("code") String code, HttpServletResponse response) {
         OauthToken oauthToken = oauth2TokenService.getKakaoAccessToken(code);
         OAuthAttributes oAuthAttributes = oauth2TokenService.loadKakao(oauthToken.getAccessToken(), oauthToken.getRefreshToken());
         User user = memberService.signUp(oAuthAttributes);
@@ -31,6 +32,6 @@ public class KakaoLoginController {
         // member db에 저장
         // generator 호출
 //        TokenDto tokenDto = jwtUtil.generateToken(authentication, response);
-        return ResponseEntity.ok(tokenDto);
+        return ResponseEntity.ok(tokenDto.getAccessToken());
     }
 }

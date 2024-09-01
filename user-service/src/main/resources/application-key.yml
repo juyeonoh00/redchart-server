@@ -1,0 +1,18 @@
+SPRING_DATASOURCE_USERNAME: root
+DB_PASSWORD: 1234
+
+REDIS_HOST: localhost
+REDIS_PORT: 6379
+
+KAKAO_CLIENT_ID: 51f206f9c28b3b1c066e1c44cfd80268
+KAKAO_REDIRECT_URL: http://localhost:8082/kakao
+KAKAO_CLIENT_SECRET: oKHWmkfPWZ2W53VSeRweeaW4E8s4W09g
+KAKAO_GRANT_TYPE: authorization_code
+KAKAO_TOKEN_URI: https://kauth.kakao.com/oauth/token
+
+MAIL_USERNAME: ohjuyeon2000@gmail.com
+MAIL_PASSWORD: "j l i m a d c h t s w x a m t t"
+
+MAIL_FROM: ODIRO@gmail.com
+
+JWT_SECRET: 7ae96706cd6e6aade43a3b843bb3317f823ab927b64beb8d45558b3ac29f079dd36afe40f1646af31c334ccbb568cfe64b9e4e54a47aa5a5077796eca1e58075

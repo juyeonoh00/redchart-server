@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor @Getter
 public class PostEventDto {
-    String type;
-    String postId;
+    private String type;
+    private String postId;
+    private Long postWriterId;
 }

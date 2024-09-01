@@ -10,13 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import server.config.jwt.JwtUtil;
 import server.config.jwt.TokenDto;
-import server.domain.User;
 import server.dto.user.*;
 import server.service.UserService;
 
@@ -36,13 +34,11 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK")
     })
-        @PostMapping(value = "/signup")
-        public ResponseEntity<SignUpResponseDto> singUp (@RequestBody SignUpDto signUpDto){
-            User user = userService.signUp(signUpDto);
-            SignUpResponseDto res = SignUpResponseDto.toDto(user);
+    @PostMapping(value = "/signup")
+    public ResponseEntity<SignUpResponseDto> singUp(@RequestBody SignUpDto signUpDto) {
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(res);
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.signUp(signUpDto));
+    }
 
     @Operation(summary = "로그인", description = "로그인후, access/refresh Token 발행")
     @ApiResponses(value = {
@@ -50,9 +46,7 @@ public class UserController {
     })
     @PostMapping("/signin")
     public ResponseEntity<TokenDto> signIn(@RequestBody SignInRequestDto signInRequestDto, HttpServletResponse response) throws Exception {
-        User user = userService.signIn(signInRequestDto);
-        TokenDto tokenDto = jwtUtil.generateToken(user, response);
-        return ResponseEntity.ok(tokenDto);
+        return ResponseEntity.ok(userService.signIn(signInRequestDto, response));
     }
 
     @Operation(summary = "이메일 인증 요청", description = "이메일 인증 코드 발송")
@@ -85,12 +79,13 @@ public class UserController {
         userService.verifiedCode(email, authCode);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    @GetMapping("/refresh-token")
-    public String refresh(@RequestHeader("Authorization")String token, HttpServletResponse response) {
-        String accessToken = jwtUtil.validateRefreshToken(token, response);
-
-        return accessToken;
-    }
+//    // 사실 원래 Post 여야함
+//    @GetMapping("/refresh-token")
+//    public String refresh(@RequestHeader("Authorization")String token, HttpServletResponse response) {
+//        String accessToken = jwtUtil.validateRefreshToken(token, response);
+//
+//        return accessToken;
+//    }
 
     @Operation(summary = "회원 정보 수정", description = "회원 정보 수정")
     @ApiResponses(value = {
@@ -102,6 +97,7 @@ public class UserController {
         // dto 만들어서 조건 추가하기
         return ResponseEntity.ok(user);
     }
+
     @Operation(summary = "프로필 이미지 업로드", description = "프로필 이미지 업로드")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202", description = "Accepted")
@@ -120,6 +116,16 @@ public class UserController {
     public void logout(HttpServletResponse response, HttpServletRequest request) {
         userService.logout(request);
         response.setHeader("Authorization", "");
+    }
+
+    @Operation(summary = "에세스 토큰 재발급", description = "에세스 토큰 재발급")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Accepted")
+    })
+    @PostMapping("/refresh-token")
+    public ResponseEntity<TokenDto> reissueAccessToken(HttpServletRequest request, HttpServletResponse response) {
+
+        return ResponseEntity.ok(userService.reissueAccessToken(request, response));
     }
 
 }
