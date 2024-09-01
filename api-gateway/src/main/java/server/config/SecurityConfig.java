@@ -17,14 +17,16 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 @EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
+    //    private final CorsConfig corsConfig;
     private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity httpSecurity) {
         return httpSecurity
                 // REST API이므로 basic auth 및 csrf 보안을 사용하지 않음
+
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(ServerHttpSecurity.CorsSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
@@ -42,6 +44,7 @@ public class SecurityConfig {
                         ex.accessDeniedHandler(new JwtAccessDeniedHandler()))
                 .addFilterAt(jwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
+
     }
 }
 

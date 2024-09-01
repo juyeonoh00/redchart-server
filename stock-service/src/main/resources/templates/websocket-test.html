@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h1>WebSocket Test</h1>
+<button onclick="connect()">Connect</button>
+<button onclick="sendMessage()">Send Message</button>
+<div id="messages"></div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/stomp');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/sub/topic', function (message) {
+                showMessage(message.body);
+            });
+        });
+    }
+
+    function sendMessage() {
+        stompClient.send("/start", {}, JSON.stringify({'message': 'Test message'}));
+    }
+
+    function showMessage(message) {
+        var messageElement = document.createElement('p');
+        messageElement.appendChild(document.createTextNode(message));
+        document.getElementById('messages').appendChild(messageElement);
+    }
+
+    /*]]>*/
+</script>
+</body>
+</html>
