@@ -30,7 +30,7 @@ public class UpbitTickerEventDto {
     @JsonProperty("prev_closing_price")
     private double prevClosingPrice;
 
-    @JsonProperty("changed_price")
+    @JsonProperty("change")
     private String change;
 
     @JsonProperty("signed_change_price")
