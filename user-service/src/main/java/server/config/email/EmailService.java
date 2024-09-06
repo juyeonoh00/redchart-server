@@ -45,7 +45,7 @@ public class EmailService {
         helper.setSubject(title);
         helper.setText(text);
 
-        helper.setFrom("ohjuyeon2000@gmail.com","ODIRO@gmail.com");
+        helper.setFrom("ohjuyeon2000@gmail.com", "ODIRO@gmail.com");
 
         // 실제 발신 주소 설정 (envelope-from)
 //        message.setEnvelopeFrom("ohjuyeon2000@gmail.com");

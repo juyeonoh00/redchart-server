@@ -8,8 +8,9 @@ import org.springframework.kafka.annotation.EnableKafka;
 @EnableKafka
 public class StockApiServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(StockApiServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+
+        SpringApplication.run(StockApiServiceApplication.class, args);
+    }
 
 }
