@@ -30,6 +30,48 @@ services:
     networks:
       - my-network
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka-server
+      - user-service
+      #      - newsfeed-service
+      - post-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=${MODE:-prod}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - my-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: user-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      user-service-mysql:
+        condition: service_healthy
+      user-service-redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+    volumes:
+      - user-service-mysql:/var/lib/mysql
+    environment:
+      - SPRING_PROFILES_ACTIVE=${MODE:-prod}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - my-network
+
   user-service-mysql:
     image: mysql:8.0.39
     container_name: user-service-mysql
@@ -57,51 +99,6 @@ services:
     networks:
       - my-network
 
-  user-service:
-    build:
-      context: .
-      dockerfile: user-service/Dockerfile
-    container_name: user-service
-    ports:
-      - "8082:8082"
-    depends_on:
-      user-service-mysql:
-        condition: service_healthy
-      user-service-redis:
-        condition: service_started
-#      kafka:
-#        condition: service_started
-      eureka-server:
-        condition: service_started
-    volumes:
-      - user-service-mysql:/var/lib/mysql
-    environment:
-      - SPRING_PROFILES_ACTIVE=${MODE:-prod}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    networks:
-      - my-network
-
-#  newsfeed-service:
-#    build:
-#      context: .
-#      dockerfile: newsfeed_service/Dockerfile
-#    container_name: newsfeed-service
-#    ports:
-#      - "8083:8083"
-#      - "3002:80"
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#      kafka:
-#        condition: service_started
-#      eureka-server:
-#        condition: service_started
-#    environment:
-#      - SPRING_PROFILES_ACTIVE=${MODE:-prod}
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-#    networks:
-#      - my-network
-#
   post-service-mysql:
     image: mysql:8.0.39
     container_name: post-service-mysql
@@ -139,18 +136,98 @@ services:
     networks:
       - my-network
 
-  api-gateway:
+
+  newsfeed-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
-    container_name: api-gateway
+      dockerfile: newsfeed-service/Dockerfile
+    container_name: newsfeed-service
     ports:
-      - "8081:8081"
+      - "8083:8083"
     depends_on:
-      - eureka-server
-      - user-service
-#      - newsfeed-service
-      - post-service
+      newsfeed-service-mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=${MODE:-prod}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - my-network
+
+  newsfeed-service-mysql:
+    image: mysql:8.0.39
+    container_name: newsfeed-service-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: newsfeed-service-mysql
+      MYSQL_LOG_CONSOLE: "true"
+    ports:
+      - "3308:3306"
+    volumes:
+      - newsfeed-service-mysql:/var/lib/mysql
+    networks:
+      - my-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+
+  stock-service:
+    build:
+      context: .
+      dockerfile: stock-service/Dockerfile
+    container_name: stock-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      stock-service-mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=${MODE:-prod}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - my-network
+
+  stock-service-mysql:
+    image: mysql:8.0.39
+    container_name: stock-service-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: newsfeed-service-mysql
+      MYSQL_LOG_CONSOLE: "true"
+    ports:
+      - "3310:3306"
+    volumes:
+      - stock-service-mysql:/var/lib/mysql
+    networks:
+      - my-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  stock-api-service:
+    build:
+      context: .
+      dockerfile: stock-api-service/Dockerfile
+    container_name: stock-api-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      kafka:
+        condition: service_started
+      eureka-server:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=${MODE:-prod}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
@@ -170,6 +247,18 @@ services:
       - ./html:/var/www/html
     networks:
       - my-network
+
+volumes:
+  post-service-mysql:
+  user-service-mysql:
+  newsfeed-service-mysql:
+  stock-service-mysql:
+  grafana-data:
+  prometheus-data:
+networks:
+  my-network:
+    driver: bridge
+
 #  grafana:
 #    image: grafana/grafana:latest
 #    container_name: grafana
@@ -197,13 +286,3 @@ services:
 #    command:
 #      - '--config.file=/etc/prometheus/prometheus.yml'
 #      - '--storage.tsdb.path=/prometheus'
-
-volumes:
-  post-service-mysql:
-  user-service-mysql:
-  grafana-data:
-  prometheus-data:
-networks:
-  my-network:
-    driver: bridge
-

@@ -5,7 +5,7 @@ spring:
     name: stock-service
   datasource:
     #    url: jdbc:mysql://localhost:3306/redchart_post_service
-    url: jdbc:mysql://localhost:3306/redchart_stock_service
+    url: jdbc:mysql://stock-service-mysql:3306/stock-service-mysql
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${DB_PASSWORD:1234}
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -7,7 +7,7 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:mysql://localhost:3307/redchart_user_service
+    url: jdbc:mysql://user-service-mysql:3306/user-service-mysql
     #    url: jdbc:mysql://localhost:33076/redchart_user_serviceser_service
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${DB_PASSWORD}
