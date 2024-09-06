@@ -12,6 +12,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
   kafka:
     consumer:
       group-id: stock-service-group      # B 서비스의 컨슈머 그룹 ID

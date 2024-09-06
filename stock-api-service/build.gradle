@@ -40,6 +40,7 @@ dependencies {
     implementation 'org.springframework:spring-websocket'
     implementation 'javax.websocket:javax.websocket-api:1.1'
     implementation 'org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.1'
+//    implementation 'org.eclipse.jetty.websocket:websocket-client:latest'
     //db
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation group: 'com.mysql', name: 'mysql-connector-j', version: '8.3.0'

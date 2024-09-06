@@ -1,47 +1,59 @@
 package server.kafka;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpbitTickerEventDto {
-    private String market;
+
+    String type;
+
+    String code;
 
     @JsonProperty("opening_price")
-    private double openingPrice;
+    Double openingPrice;
 
     @JsonProperty("high_price")
-    private double highPrice;
+    Double highPrice;
 
     @JsonProperty("low_price")
-    private double lowPrice;
+    Double lowPrice;
 
     @JsonProperty("trade_price")
-    private double tradePrice;
+    Double tradePrice;
 
     @JsonProperty("prev_closing_price")
-    private double prevClosingPrice;
+    Double prevClosingPrice;
 
     @JsonProperty("change")
-    private String change;
+    String change;
 
     @JsonProperty("signed_change_price")
-    private double signedChangePrice;
+    Double signedChangePrice;
 
     @JsonProperty("signed_change_rate")
-    private double signedChangeRate;
+    Double signedChangeRate;
 
     @JsonProperty("acc_trade_price")
-    private double accTradePrice;
+    Double accTradePrice;
 
     @JsonProperty("acc_trade_volume")
-    private double accTradeVolume;
+    Double accTradeVolume;
 
     @JsonProperty("acc_trade_price_24h")
-    private double accTradePrice24h;
+    Double accTradePrice24h;
 
     @JsonProperty("timestamp")
-    private long timestamp;
+    Long timestamp;
+
 }

@@ -10,6 +10,9 @@ import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.Collections;
 
 
 @Slf4j
@@ -26,7 +29,15 @@ public class SecurityConfig {
                 // REST API이므로 basic auth 및 csrf 보안을 사용하지 않음
 
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(ServerHttpSecurity.CorsSpec::disable)
+                .cors(corsSpec -> corsSpec.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowCredentials(true);
+                    config.setAllowedMethods(Collections.singletonList("*"));
+                    config.setAllowedHeaders(Collections.singletonList("*"));
+                    config.setAllowedOrigins(Collections.singletonList("*"));
+                    config.setMaxAge(3600L);
+                    return config;
+                }))
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())

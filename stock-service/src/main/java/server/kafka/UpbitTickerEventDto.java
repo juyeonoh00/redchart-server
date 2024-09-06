@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import server.domain.Stock_BTC;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpbitTickerEventDto {
 
-    private String market;
+    private String type;
+
+    private String code;
 
     @JsonProperty("opening_price")
     private double openingPrice;
@@ -41,10 +44,28 @@ public class UpbitTickerEventDto {
 
     @JsonProperty("acc_trade_volume")
     private double accTradeVolume;
-
     @JsonProperty("acc_trade_price_24h")
     private double accTradePrice24h;
-
     @JsonProperty("timestamp")
     private long timestamp;
+
+    public Stock_BTC toEntity() {
+        return new Stock_BTC(
+                null, // ID는 자동 생성되므로 null로 설정
+                "ticker", // type 값은 고정 문자열 "ticker"로 설정
+                this.code, // Dto의 market 필드를 entity의 code로 매핑
+                this.openingPrice,
+                this.highPrice,
+                this.lowPrice,
+                this.tradePrice,
+                this.prevClosingPrice,
+                this.change,
+                this.signedChangePrice,
+                this.signedChangeRate,
+                this.accTradePrice,
+                this.accTradeVolume,
+                this.accTradePrice24h,
+                this.timestamp
+        );
+    }
 }

@@ -3,6 +3,7 @@ FROM gradle:7.6-jdk17 AS build
 WORKDIR /app
 COPY . .
 RUN chmod +x ./gradlew
+RUN sed -i 's/\r$//' ./gradlew
 RUN ./gradlew :api-gateway:build -x test --no-daemon
 
 # Run stage
