@@ -1,10 +1,8 @@
 package server.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "stock_qkc", indexes = {
@@ -13,47 +11,49 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Stock_USDT {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    private String type;
-    private String code;
+    String type;
+    String code;
 
     @Column(name = "opening_price")
-    private double openingPrice;
+    Double openingPrice;
 
     @Column(name = "high_price")
-    private double highPrice;
+    Double highPrice;
 
     @Column(name = "low_price")
-    private double lowPrice;
+    Double lowPrice;
 
     @Column(name = "trade_price")
-    private double tradePrice;
+    Double tradePrice;
 
     @Column(name = "prev_closing_price")
-    private double prevClosingPrice;
+    Double prevClosingPrice;
+
     @Column(name = "changed_price")
-    private String changed_price;
+    String changed_price;
 
     @Column(name = "signed_change_price")
-    private double signedChangePrice;
+    Double signedChangePrice;
 
     @Column(name = "signed_change_rate")
-    private double signedChangeRate;
+    Double signedChangeRate;
 
     @Column(name = "acc_trade_price")
-    private double accTradePrice;
+    Double accTradePrice;
 
     @Column(name = "acc_trade_volume")
-    private double accTradeVolume;
+    Double accTradeVolume;
 
     @Column(name = "acc_trade_price_24h")
-    private double accTradePrice24h;
+    Double accTradePrice24h;
 
     @Column(name = "timestamp")
-    private long timestamp;
+    Long timestamp;
 }
