@@ -52,13 +52,13 @@
 
 ### 아키텍처
 
-![](C:\Users\Administrator\Downloads\RedChart\img\architecture.png)
+<img src="img\odiro_architecture.png" alt="RedChart Architecture" width="600">
 
 ## 명세서
 
 <details><summary><strong>ERD</strong></summary>
 
-![](C:\Users\Administrator\Downloads\RedChart\img\ERD.png)
+<img src="img\odiro_ERD.png" alt="RedChart ERD" width="600">
 </details>
 
 <details><summary><strong>API 명세서</strong></summary>
