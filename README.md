@@ -97,40 +97,51 @@
 ## 기술적 의사결정
 
 1. **마이크로서비스 아키텍처(MSA) 도입:**
-
-    - 각 서비스의 독립성을 보장하고, 확장성을 극대화하기 위해 MSA를 도입
     - Spring Cloud와 Netflix Eureka를 사용하여 서비스 디스커버리와 로드 밸런싱을 구현
-    - API Gateway 서비스에서 JWT 기반 인증 및 보안 모듈을 설정
-    - 각 마이크로서비스 간의 통신은 Feign Client를 사용하여 REST API 기반으로 비동기 처리하였으며, 서비스 간의 높은 응답 시간을 해결하기 위해 병렬 처리(CompletableFuture)를 활용
+    - API Gateway 서비스에서 JWT 기반 인증 및 Spring Security를 통한 보안 모듈을 설정
 
-3. **Nginx 정적 페이지 캐싱**
+2. **Nginx 정적 페이지 캐싱**
     - 데이터 변경이 적은 페이지의 경우 동적 처리의 경우 비효율적이라 판단
     - nginx를 통해 매일 일봉 페이지를 저장하고 캐싱을 하여 서버에 도달하기 전에 데이터를 받을 수 있도록 처리
 
+3. **Redis fan-out-on-write (push 모델) 채택**
+   - 조회가 잦고, 조회 성능이 우선시 되는 뉴스피드의 특성을 고려하여 fan-out-on-write push 모델을 사용
+   - 실제 운영 시 hotkey에 대한 제약 조건 구현 예정
+     
+      ex) 신규 개설 계정에 대한 팔로잉 수 제한, 1일 팔로잉 제한, 장기 미접속자에 대한 빠른 계정 비활성화
+
+
 ## 트러블 슈팅 및 성능 개선
 
-1. **Apache Kafka 사용** : 데이터 분석에 대한 확장성과 비동기적인 대용량 데이터를 실시간으로 안전하게 처리하기 위해 사용
+1. **Apache Kafka 사용**
+  
+   : 데이터 분석에 대한 확장성과 비동기적인 대용량 데이터를 실시간으로 안전하게 처리하기 위해 사용
+   
     - **역직렬화 문제**:
-        - 문제 상황: Kafka Consumer에서 DTO 자동 역직렬화가 실패하는 문제를 해결하기 위해 Kafka 설정을 <String, Object> 형태로 변경하고, ObjectMapper 기반의 동적 DTO 변환 방식을 도입하여 LinkedHashMap을 DTO로 자동 변환하도록 개선했다. 이를 통해 DTO 패키지 불일치 문제 없이 다양한 DTO를 수신할 수 있도록 구성했으며, Jackson의 JavaTimeModule을 추가하여 LocalDateTime 변환 이슈도 해결했다. Kafka Listener가 DTO 타입에 관계없이 객체를 변환할 수 있도록 설계하여, 공통 모듈 없이도 MSA 구조 내에서 개별 서비스의 독립성을 유지하면서 유연한 메시지 처리를 가능하게 했다. 결과적으로 Kafka 메시지의 직렬화/역직렬화 과정에서 발생하는 오류를 방지하고, 유지보수성을 높이는 효과를 얻었다.
-
+        - 문제 상황:
+            - Kafka Consumer와 Producer의 DTO 패키지가 다르면 자동 역직렬화가 실패하여 `LinkedHashMap`타입으로 변환됨
+            - MSA의 의존성 최소화 및 개별 서비스의 독립성 강화를 위해 공통 모듈 없이 메세지 처리
+        - 해결 방법:
+            - ConsumerRecord<String, Object>로 메시지 수신 후 ObjectMapper를 이용한 동적 역직렬화 구현
+            -  Kafka Listener에서 DTO 타입에 관계없이 객체 변환 가능하도록 구성
       
    - **빠른 데이터 처리를 위해 종목 별 topic을 생성하여 병렬적으로 작업** :  수치화 예정
 
 
-2. **Redis 사용**
-    - **fan-out-on-write 구조**
-        - 조회가 잦고, 조회 성능이 우선시 되는 뉴스피드의 특성을 고려하여 fan-out-on-write push 모델을 사용
-        - 데이터 일관성을 유지하면서 데이터베이스 부하를 최소화하기 위해 fan-out-on-write 방식과 TTL 기법을 적용
-        - 제약조건
-        - on-read보다 나은점
-    - **quick list 사용**
-        - 성능 개선
-        - 
+4. **Redis 사용**
+    - **Redis의 quick list 사용을 통한 성능 개선**
+        - 문제 상황:
+            - 뉴스피드의 push 모델로 Post 생성 시 Redis에 팔로워 수만큼의 lpush가 생성
+            - 기존 zip list 타입의 경우 압축된 ArrayList() 타입으로 lpush 시 Q(n)만큼의 공간 복잡도를 갖음
+        - 해결 방안:
+            - redis config를 통해 기존 512까지는 zip list를 사용하는 redis의 설정을 바꾸어 이중 linked-list의 하이브리드 타입인 quick list를 사용함으로써 성능 개선
+        - 성과:
+            - 1000개 게시물 기준 20mb → 600kb → 1.3mb / 476ms → 133ms→16ms
 
 
 
 
-
+장애에 대한 대책!!!!!!!!1
 
 
 
