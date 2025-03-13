@@ -52,18 +52,13 @@
 
 ### 아키텍처
 
-<img src="img\odiro_architecture.png" alt="RedChart Architecture" width="600">
+<img src="img\architecture.png" alt="RedChart Architecture" width="600">
 
 ## 명세서
 
 <details><summary><strong>ERD</strong></summary>
 
-<img src="img\odiro_ERD.png" alt="RedChart ERD" width="600">
-</details>
-
-<details><summary><strong>API 명세서</strong></summary>
-
-스웨거 링크 추가 예정
+<img src="img\ERD.png" alt="RedChart ERD" width="600">
 </details>
 
 ## 주요 기능
