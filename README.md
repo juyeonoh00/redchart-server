@@ -52,7 +52,7 @@
 
 ### 아키텍처
 
-<img src="img\architecture.png" alt="RedChart Architecture" width="600">
+[<img src="img\architecture.png" alt="RedChart Architecture" width="800">](https://github.com/RedChart/back-end/issues/1#issue-2942550658)
 
 ## 명세서
 
