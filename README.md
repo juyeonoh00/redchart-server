@@ -57,7 +57,7 @@
 ## 명세서
 
 - [ERD](https://elite-atom-ce3.notion.site/ERD-1bbe4ebdbce4809b8201c7d68597e24b?pvs=4)
-- [Api 명세서](https://elite-atom-ce3.notion.site/Api-1bbe4ebdbce480108827df0ce37cab74?pvs=4)
+- [API 명세서](https://elite-atom-ce3.notion.site/Api-1bbe4ebdbce480108827df0ce37cab74?pvs=4)
 
 ## 주요 기능
 
